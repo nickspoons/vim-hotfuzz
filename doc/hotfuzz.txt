@@ -1,0 +1,48 @@
+*hotfuzz.txt*                        Hot Fuzz                *hotfuzz* *vim-hotfuzz*
+
+==============================================================================
+ INTRODUCTION                                                   *hotfuzz-intro*
+
+vim-hotfuzz is a small, fast fuzzy-finding plugin for vim.
+
+Its speed relies entirely on external tool {fd}{1}, which must be installed
+separately. If "fd" is not installed, vim-hotfuzz falls back to using vim's
+`globpath()`, which works on small codebases but will quickly deteriorate as
+the number of files and subdirectories increases.
+
+                                             {1} https://github.com/sharkdp/fd
+
+==============================================================================
+ USAGE                                                          *hotfuzz-usage*
+
+Usage of vim-hotfuzz revolves entirely around the |:HotFuzz| command, which
+can be used with <CR> to go directly to the first match, or with 'wildchar'
+(<Tab> by default) to tab through matches.
+
+*:HotFuzz*
+
+    Expects one or more filename "segments", which are fuzzily joined to
+    create a search pattern.
+
+    Example: >
+
+        :HotFuzz Foo ba
+<
+    File matches are sorted by:
+
+    - case-sensitive match from start
+    - non-case-sensitive match from start
+    - case-sensitive match
+    - non-case-sensitive match
+    - length of entire path
+
+    The previous example will therefore match files in this order: >
+
+        a/b/Foobar
+        a/football
+        a.b.Football
+        a/a.foo.bar
+        a.foo.bar.baz
+<
+
+ vim:tw=78:ts=8:ft=help:norl:

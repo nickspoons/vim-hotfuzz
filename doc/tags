@@ -1,0 +1,6 @@
+:HotFuzz	hotfuzz.txt	/*:HotFuzz*
+hotfuzz	hotfuzz.txt	/*hotfuzz*
+hotfuzz-intro	hotfuzz.txt	/*hotfuzz-intro*
+hotfuzz-usage	hotfuzz.txt	/*hotfuzz-usage*
+hotfuzz.txt	hotfuzz.txt	/*hotfuzz.txt*
+vim-hotfuzz	hotfuzz.txt	/*vim-hotfuzz*
