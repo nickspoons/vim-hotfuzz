@@ -38,7 +38,9 @@ function! hotfuzz#complete(search, cmdline, cursorpos) abort
   if executable('fd')
     let sep = '.*'
     let fuzzy = sep . join(s:search, sep) . sep
-    let matches = split(system('fd -t f "' . fuzzy . '"'), "\n")
+    let flags = get(g:, 'hotfuzz_fd_flags', '')
+    let cmd = 'fd ' . flags . ' -t f "' . fuzzy . '"'
+    let matches = split(system(cmd), "\n")
   else
     let sep = '*'
     let fuzzy = sep . join(s:search, sep) . sep

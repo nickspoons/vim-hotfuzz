@@ -13,6 +13,18 @@ the number of files and subdirectories increases.
                                              {1} https://github.com/sharkdp/fd
 
 ==============================================================================
+ CONFIGURATION                                          *hotfuzz-configuration*
+
+                                                         *'g:hotfuzz_fd_flags'*
+Value: string                                                                ~
+Default: ''                                                                  ~
+
+Extra flags to be passed to fd - e.g. exlude node_modules matches etc. >
+
+    let g:hotfuzz_fd_flags = '-E /node_modules/ -E /vendor/'
+<
+
+==============================================================================
  USAGE                                                          *hotfuzz-usage*
 
 Usage of vim-hotfuzz revolves entirely around the |:HotFuzz| command, which
@@ -45,4 +57,4 @@ can be used with <CR> to go directly to the first match, or with 'wildchar'
         a.foo.bar.baz
 <
 
- vim:tw=78:ts=8:ft=help:norl:
+ vim:tw=78:ts=8:sw=4:ft=help:norl:
