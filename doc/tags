@@ -1,5 +1,7 @@
+'g:hotfuzz_fd_flags'	hotfuzz.txt	/*'g:hotfuzz_fd_flags'*
 :HotFuzz	hotfuzz.txt	/*:HotFuzz*
 hotfuzz	hotfuzz.txt	/*hotfuzz*
+hotfuzz-configuration	hotfuzz.txt	/*hotfuzz-configuration*
 hotfuzz-intro	hotfuzz.txt	/*hotfuzz-intro*
 hotfuzz-usage	hotfuzz.txt	/*hotfuzz-usage*
 hotfuzz.txt	hotfuzz.txt	/*hotfuzz.txt*
