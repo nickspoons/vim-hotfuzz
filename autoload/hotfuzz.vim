@@ -39,7 +39,9 @@ function! hotfuzz#complete(search, cmdline, cursorpos) abort
     let sep = '.*'
     let fuzzy = sep . join(s:search, sep) . sep
     let flags = get(g:, 'hotfuzz_fd_flags', '')
-    let cmd = 'fd ' . flags . ' -t f "' . fuzzy . '"'
+    " TODO: add flags for including -H (hidden) and -I (ignored) flags
+    " Perhaps a bang for -I and '.' as the first segment for -H
+    let cmd = 'fd ' . flags . ' -H -E /.git/ -t f "' . fuzzy . '"'
     let matches = split(system(cmd), "\n")
   else
     let sep = '*'
@@ -59,7 +61,6 @@ function! hotfuzz#complete(search, cmdline, cursorpos) abort
     " tab-completed. This time, however, the previous matches are displayed.
     let s:multi_segment_matches = matches
     let new_cmd = cmdargs[0] . ' ' . join(s:search, sep)
-    echom new_cmd
     call feedkeys("\<C-c>:" . new_cmd . nr2char(&wildcharm), 'i')
   endif
 
