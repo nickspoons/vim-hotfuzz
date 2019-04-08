@@ -61,6 +61,7 @@ function! hotfuzz#complete(search, cmdline, cursorpos) abort
     " tab-completed. This time, however, the previous matches are displayed.
     let s:multi_segment_matches = matches
     let new_cmd = cmdargs[0] . ' ' . join(s:search, sep)
+    let matches = [a:search]
     call feedkeys("\<C-c>:" . new_cmd . nr2char(&wildcharm), 'i')
   endif
 
