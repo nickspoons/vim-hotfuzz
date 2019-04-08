@@ -5,9 +5,14 @@ function! hotfuzz#find(filename) abort
   if filereadable(a:filename)
     execute 'edit' a:filename
   else
-    let matches = hotfuzz#complete(a:filename, -1, -1)
-    if len(matches) > 0
-      execute 'edit' matches[0]
+    let s:last_matches = hotfuzz#complete(a:filename, -1, -1)
+    if len(s:last_matches) > 0
+      if len(s:last_matches) > 1
+        echon 'Opening first of '
+        echohl Special | echon len(s:last_matches) | echohl None
+        echon ' matches: ' . s:last_matches[0]
+      endif
+      execute 'silent edit' s:last_matches[0]
     else
       echohl Special | echo 'No matches' | echohl None
     endif
@@ -42,16 +47,18 @@ function! hotfuzz#complete(search, cmdline, cursorpos) abort
     " TODO: add flags for including -H (hidden) and -I (ignored) flags
     " Perhaps a bang for -I and '.' as the first segment for -H
     let cmd = 'fd ' . flags . ' -H -E /.git/ -t f "' . fuzzy . '"'
-    let matches = split(system(cmd), "\n")
+    let s:last_matches = split(system(cmd), "\n")
   else
     let sep = '*'
     let fuzzy = sep . join(s:search, sep) . sep
-    let matches = globpath('**', fuzzy, 1, 1)
+    let s:last_matches = globpath('**', fuzzy, 1, 1)
   endif
 
-  call sort(matches, 's:sort')
+  call sort(s:last_matches, 's:sort')
 
-  if len(matches) && a:cmdline != -1 && len(cmdargs) > 2
+  let matches = s:last_matches
+
+  if len(s:last_matches) && a:cmdline != -1 && len(cmdargs) > 2
     " The command contains segments (i.e. :HotFuzz fo ba) and matches have
     " been found. However, returning results at this point will only replace the
     " last segment, and leave the command looking like this:
@@ -59,13 +66,29 @@ function! hotfuzz#complete(search, cmdline, cursorpos) abort
     " To work around this strange state, the matches are stored in a temporary
     " variable, and the entire command is cancelled and rebuilt and again
     " tab-completed. This time, however, the previous matches are displayed.
-    let s:multi_segment_matches = matches
+    let s:multi_segment_matches = s:last_matches
     let new_cmd = cmdargs[0] . ' ' . join(s:search, sep)
     let matches = [a:search]
     call feedkeys("\<C-c>:" . new_cmd . nr2char(&wildcharm), 'i')
   endif
 
   return matches
+endfunction
+
+function! hotfuzz#to_args() abort
+  if !exists('s:last_matches')
+    echohl Special
+    echo 'Run :HotFuzz first, then convert the results to an args list'
+    echohl None
+    return
+  endif
+  try
+    execute 'arglocal' join(s:last_matches)
+  catch /E37/
+    echohl WarningMsg
+    echo 'Vim doesn''t like that - save this buffer first'
+    echohl None
+  endtry
 endfunction
 
 function! s:sort(s1, s2) abort

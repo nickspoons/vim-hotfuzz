@@ -7,8 +7,8 @@ If `fd` is not installed, vim-hotfuzz falls back to using vim's `globpath()`, wh
 
 ## Usage
 
-Usage revolves around the single command `:HotFuzz`.
-This commands accepts filename "segments", which are used as components of a fuzzy search.
+Usage revolves around the primary command `:HotFuzz`.
+This command accepts filename "segments", which are used as components of a fuzzy search.
 Note that only filename segments are searched, not path name.
 
 ```vim
@@ -42,6 +42,12 @@ a.b.Football
 a/a.foo.bar
 a.foo.bar.baz
 ```
+
+When `:HotFuzz` is used _without_ tab completion, the number of file matches is echoed so it is clear that the opened buffer is not the only match.
+
+### HotFuzzToArgs
+
+Running `:HotFuzzToArgs` after a hot fuzz search populates the local argument with the matches from the previous search, allowing navigation using the standard arg-list commands, e.g. `:next` and `:prev`.
 
 ## Limitations
 

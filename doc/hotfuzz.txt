@@ -27,9 +27,9 @@ Extra flags to be passed to fd - e.g. exlude node_modules matches etc. >
 ==============================================================================
  USAGE                                                          *hotfuzz-usage*
 
-Usage of vim-hotfuzz revolves entirely around the |:HotFuzz| command, which
-can be used with <CR> to go directly to the first match, or with 'wildchar'
-(<Tab> by default) to tab through matches.
+Usage of vim-hotfuzz revolves around the |:HotFuzz| command, which can be used
+with <CR> to go directly to the first match, or with 'wildchar' (<Tab> by
+default) to tab through matches.
 
 *:HotFuzz*
 
@@ -56,5 +56,9 @@ can be used with <CR> to go directly to the first match, or with 'wildchar'
         a/a.foo.bar
         a.foo.bar.baz
 <
+*:HotFuzzToArgs*
+
+    Set the matches from the previous |:HotFuzz| search as the local argument
+    list. They can then be easily navigated using |:next| / |:prev| etc.
 
  vim:tw=78:ts=8:sw=4:ft=help:norl:
