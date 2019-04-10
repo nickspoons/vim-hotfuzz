@@ -27,33 +27,66 @@ function! hotfuzz#complete(search, cmdline, cursorpos) abort
   endif
 
   if a:cmdline == -1
-    let s:search = split(a:search, ' ')
+    let parts = s:split_path(a:search)
   " When tab-completion is used with search segments ('fo ba' for 'foo.bar'),
   " a:search will only include the last segment. Use a:cmdline to find the other
   " segments
   else
-    let cmdargs = split(a:cmdline)
+    let cmdargs = s:split_path(a:cmdline)
     if len(cmdargs) > 2
-      let s:search = cmdargs[1:]
+      let parts = cmdargs[1:]
     else
-      let s:search = [a:search]
+      let parts = [a:search]
     endif
   endif
 
-  if executable('fd')
-    let sep = '.*'
-    let fuzzy = sep . join(s:search, sep) . sep
-    let flags = get(g:, 'hotfuzz_fd_flags', '')
-    " TODO: add flags for including -H (hidden) and -I (ignored) flags
-    " Perhaps a bang for -I and '.' as the first segment for -H
-    let cmd = 'fd ' . flags . ' -H -E /.git/ -t f "' . fuzzy . '"'
-    let s:last_matches = split(system(cmd), "\n")
-  else
-    let sep = '*'
-    let fuzzy = sep . join(s:search, sep) . sep
-    let s:last_matches = globpath('**', fuzzy, 1, 1)
+  let fd_flags = ''
+
+  " A '!' argument means include ignored files/dirs from e.g. .gitignore
+  let idx = index(parts, '!')
+  if idx >= 0
+    let fd_flags = '-I '
+    call remove(parts, idx)
   endif
 
+  " A '.' argument means hidden files/dirs should be searched
+  let idx = index(parts, '.')
+  if idx >= 0
+    let fd_flags = '-H '
+    call remove(parts, idx)
+  endif
+
+  let file_parts = []
+  let path_parts = []
+  let in_path = 0
+  for part in reverse(parts)
+    if !len(part)
+      continue
+    endif
+    if stridx(part, '/') >= 0 || len(path_parts)
+      call insert(path_parts, part, 0)
+    else
+      call insert(file_parts, part, 0)
+    endif
+  endfor
+
+  if executable('fd')
+    let sep = '.*'
+    let file_fuzzed = sep . join(file_parts, sep) . sep
+    let path_fuzzed = sep . join(path_parts, sep) . sep
+    let fd_flags .= get(g:, 'hotfuzz_fd_flags', '') . ' '
+    let cmd = 'fd ' . fd_flags . ' -t f "' . file_fuzzed . '"'
+    let s:last_matches = split(system(cmd), "\n")
+    if len(path_parts)
+      call filter(s:last_matches, {i,v -> v =~? path_fuzzed})
+    endif
+  else
+    let sep = '*'
+    let fuzzed = sep . join(path_parts + file_parts, sep) . sep
+    let s:last_matches = globpath('**', fuzzed, 1, 1)
+  endif
+
+  let s:search = file_parts
   call sort(s:last_matches, 's:sort')
 
   let matches = s:last_matches
@@ -67,7 +100,7 @@ function! hotfuzz#complete(search, cmdline, cursorpos) abort
     " variable, and the entire command is cancelled and rebuilt and again
     " tab-completed. This time, however, the previous matches are displayed.
     let s:multi_segment_matches = s:last_matches
-    let new_cmd = cmdargs[0] . ' ' . join(s:search, sep)
+    let new_cmd = cmdargs[0] . ' ' . join(path_parts + file_parts, sep)
     let matches = [a:search]
     call feedkeys("\<C-c>:" . new_cmd . nr2char(&wildcharm), 'i')
   endif
@@ -89,6 +122,10 @@ function! hotfuzz#to_args() abort
     echo 'Vim doesn''t like that - save this buffer first'
     echohl None
   endtry
+endfunction
+
+function! s:split_path(search) abort
+  return split(substitute(a:search, '/', ' /', 'g'), '\( \|/\zs\)')
 endfunction
 
 function! s:sort(s1, s2) abort
