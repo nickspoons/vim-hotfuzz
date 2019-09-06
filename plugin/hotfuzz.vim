@@ -11,4 +11,8 @@ command! -complete=customlist,hotfuzz#complete -nargs=1 HotFuzz
 
 command! HotFuzzToArgs call hotfuzz#to_args()
 
+if !hasmapto("\<C-d>", 'c')
+  cnoremap <expr> <C-d> hotfuzz#ctrld()
+endif
+
 let &cpoptions = s:save_cpo

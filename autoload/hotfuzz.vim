@@ -19,11 +19,24 @@ function! hotfuzz#find(filename) abort
   endif
 endfunction
 
+function! hotfuzz#ctrld() abort
+  if stridx(getcmdline(), 'HotFuzz') == 0
+    let s:ctrld = 1
+  endif
+  return "\<C-d>"
+endfunction
+
 function! hotfuzz#complete(search, cmdline, cursorpos) abort
   if exists('s:multi_segment_matches')
     let matches = s:multi_segment_matches
     unlet s:multi_segment_matches
     return matches
+  endif
+
+  let ctrld = 0
+  if exists('s:ctrld')
+    unlet s:ctrld
+    let ctrld = 1
   endif
 
   if a:cmdline == -1
@@ -103,9 +116,18 @@ function! hotfuzz#complete(search, cmdline, cursorpos) abort
     " variable, and the entire command is cancelled and rebuilt and again
     " tab-completed. This time, however, the previous matches are displayed.
     let s:multi_segment_matches = s:last_matches
-    let new_cmd = cmdargs[0] . ' ' . join(path_parts + file_parts, sep)
     let matches = [a:search]
-    call feedkeys("\<C-c>:" . new_cmd . nr2char(&wildcharm), 'i')
+
+    if ctrld
+      let tab = "\<C-d>"
+      let sep = ' '
+      let fflags = 'in' " Do not remap
+    else
+      let tab = nr2char(&wildcharm)
+      let fflags = 'i' " Remap to recursively call this function
+    endif
+    let new_cmd = cmdargs[0] . ' ' . join(path_parts + file_parts, sep)
+    call feedkeys("\<C-c>:" . new_cmd . tab, fflags)
   endif
 
   return matches
