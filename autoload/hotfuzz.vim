@@ -128,20 +128,28 @@ function! s:split_path(search) abort
   return split(substitute(a:search, '/', ' /', 'g'), '\( \|/\zs\)')
 endfunction
 
-function! s:sort(s1, s2) abort
-  let s1 = fnamemodify(a:s1, ':t')
-  let s2 = fnamemodify(a:s2, ':t')
+function! s:sort(p1, p2) abort
+  let f1 = fnamemodify(a:p1, ':t')
+  let f2 = fnamemodify(a:p2, ':t')
   let search = join(s:search)
-  if s1 =~# '^' . search                 " s1 is case-sensitive match from start
-    return s2 =~# '^' . search ? len(s1) - len(s2) : -1
-  elseif s2 =~# '^' . search             " s2 is case-sensitive match from start
+  if f1 =~# '^' . search               " f1 is case-sensitive match from start
+    return f2 =~# '^' . search ? s:shorterByFileOrPath(f1, a:p1, f2, a:p2) : -1
+  elseif f2 =~# '^' . search           " f2 is case-sensitive match from start
     return 1
-  elseif s1 =~? '^' . search           " s1 is case-insensitive match from start
-    return s2 =~? '^' . search ? len(s1) - len(s2) : -1
-  elseif s2 =~? '^' . search           " s2 is case-insensitive match from start
+  elseif f1 =~? '^' . search           " f1 is case-insensitive match from start
+    return f2 =~? '^' . search ? s:shorterByFileOrPath(f1, a:p1, f2, a:p2) : -1
+  elseif f2 =~? '^' . search           " f2 is case-insensitive match from start
     return 1
-  else                                        " length comparison on entire path
-    return len(a:s1) - len(a:s2)
+  else                                 " length comparison on entire path
+    return s:shorterByFileOrPath(f1, a:p1, f2, a:p2)
+  endif
+endfunction
+
+function! s:shorterByFileOrPath(f1, p1, f2, p2) abort
+  if len(a:f1) - len(a:f2) != 0
+    return len(a:f1) - len(a:f2)       " length comparison on filenames
+  else
+    return len(a:p1) - len(a:p2)       " length comparison on entire string
   endif
 endfunction
 
