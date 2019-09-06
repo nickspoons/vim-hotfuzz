@@ -28,11 +28,11 @@ function! hotfuzz#complete(search, cmdline, cursorpos) abort
 
   if a:cmdline == -1
     let parts = s:split_path(a:search)
-  " When tab-completion is used with search segments ('fo ba' for 'foo.bar'),
-  " a:search will only include the last segment. Use a:cmdline to find the other
-  " segments
   else
-    let cmdargs = s:split_path(a:cmdline)
+    " When tab-completion is used with search segments ('fo ba' for 'foo.bar'),
+    " a:search will only include the last segment. Use a:cmdline to find the other
+    " segments
+    let cmdargs = s:split_path(a:cmdline[:a:cursorpos - 1])
     if len(cmdargs) > 2
       let parts = cmdargs[1:]
     else
@@ -40,19 +40,23 @@ function! hotfuzz#complete(search, cmdline, cursorpos) abort
     endif
   endif
 
-  let fd_flags = ''
+  let fd_flags = get(g:, 'hotfuzz_fd_flags', '') . ' '
 
   " A '!' argument means include ignored files/dirs from e.g. .gitignore
   let idx = index(parts, '!')
   if idx >= 0
-    let fd_flags = '-I '
+    if index(split(fd_flags), '-I') < 0
+      let fd_flags .= '-I '
+    endif
     call remove(parts, idx)
   endif
 
   " A '.' argument means hidden files/dirs should be searched
   let idx = index(parts, '.')
   if idx >= 0
-    let fd_flags = '-H '
+    if index(split(fd_flags), '-H') < 0
+      let fd_flags .= '-H '
+    endif
     call remove(parts, idx)
   endif
 
@@ -74,8 +78,7 @@ function! hotfuzz#complete(search, cmdline, cursorpos) abort
     let sep = '.*'
     let file_fuzzed = sep . join(file_parts, sep) . sep
     let path_fuzzed = sep . join(path_parts, sep) . sep
-    let fd_flags .= get(g:, 'hotfuzz_fd_flags', '') . ' '
-    let cmd = 'fd ' . fd_flags . ' -t f "' . file_fuzzed . '"'
+    let cmd = 'fd ' . fd_flags . '-t f "' . file_fuzzed . '"'
     let s:last_matches = split(system(cmd), "\n")
     if len(path_parts)
       call filter(s:last_matches, {i,v -> v =~? path_fuzzed})
