@@ -88,11 +88,16 @@ function! hotfuzz#complete(search, cmdline, cursorpos) abort
   endfor
 
   if executable('fd')
+    let l:cmd = 'fd '
+  elseif executable('fdfind')
+    let l:cmd = 'fdfind '
+  endif
+  if exists('l:cmd')
     let sep = '.*'
     let file_fuzzed = sep . join(file_parts, sep) . sep
     let path_fuzzed = sep . join(path_parts, sep) . sep
-    let cmd = 'fd ' . fd_flags . '-t f "' . file_fuzzed . '"'
-    let s:last_matches = split(system(cmd), "\n")
+    let l:cmd = l:cmd . fd_flags . '-t f "' . file_fuzzed . '"'
+    let s:last_matches = split(system(l:cmd), "\n")
     if len(path_parts)
       call filter(s:last_matches, {i,v -> v =~? path_fuzzed})
     endif
